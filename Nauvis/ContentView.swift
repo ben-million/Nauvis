@@ -212,14 +212,14 @@ private struct ToolCallRow: View {
                         .truncationMode(.middle)
                 }
                 Spacer(minLength: 8)
-                Image(systemName: "rectangle.split.2x1")
+                Image(systemName: "rectangle.on.rectangle")
                     .foregroundStyle(.tertiary)
             }
             .font(.system(.callout, design: .monospaced))
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .help("Open tool call in a split")
+        .help("Open tool call in a new tab")
         .accessibilityLabel("Open \(execution.name) tool call")
         .accessibilityValue(stateLabel)
     }

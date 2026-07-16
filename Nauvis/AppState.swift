@@ -10,7 +10,6 @@ final class AppState: ObservableObject {
 
     private let workingDirectory: URL
     private var sessionNumber = 0
-    private var isOpeningToolCall = false
 
     init() {
         let configuration = BonsplitConfiguration(contentViewLifecycle: .recreateOnSwitch)
@@ -33,7 +32,7 @@ final class AppState: ObservableObject {
         sessionNumber += 1
         guard let tabID = controller.createTab(
             title: "Session \(sessionNumber)",
-            icon: "terminal",
+            icon: nil,
             inPane: pane
         ) else { return }
 
@@ -50,7 +49,7 @@ final class AppState: ObservableObject {
         controller.updateTab(
             tabID,
             title: "Session \(sessionNumber)",
-            icon: "terminal"
+            icon: .some(nil)
         )
         sessions[tabID] = PiSession(workingDirectory: workingDirectory)
     }
@@ -87,19 +86,13 @@ final class AppState: ObservableObject {
             return
         }
 
-        let tab = Bonsplit.Tab(title: execution.name, icon: "wrench.and.screwdriver")
-        toolCallTabs[tab.id] = execution
-        isOpeningToolCall = true
-        let newPane = controller.splitPane(
-            pane,
-            orientation: .horizontal,
-            withTab: tab
-        )
-        isOpeningToolCall = false
+        guard let tabID = controller.createTab(
+            title: execution.name,
+            icon: nil,
+            inPane: pane
+        ) else { return }
 
-        if newPane == nil {
-            toolCallTabs.removeValue(forKey: tab.id)
-        }
+        toolCallTabs[tabID] = execution
     }
 
     private func sessionTitle(for message: String) -> String {
@@ -127,8 +120,6 @@ extension AppState: BonsplitDelegate {
         newPane: PaneID,
         orientation: SplitOrientation
     ) {
-        if !isOpeningToolCall {
-            newSession(inPane: newPane)
-        }
+        newSession(inPane: newPane)
     }
 }
