@@ -85,7 +85,7 @@ private struct SessionView: View {
                                 ToolCallRow(execution: execution) {
                                     onOpenToolCall(execution)
                                 }
-                            case .user, .assistant, .error:
+                            case .user, .assistant, .thinking, .error:
                                 MessageRow(message: message)
                             }
                         }
@@ -169,6 +169,7 @@ private struct MessageRow: View {
         switch message.role {
         case .user: "YOU"
         case .assistant: "PI"
+        case .thinking: "THINKING"
         case .error: "ERROR"
         case .toolCall: "TOOL"
         }
@@ -176,7 +177,7 @@ private struct MessageRow: View {
 
     private var labelColor: Color {
         switch message.role {
-        case .user: .secondary
+        case .user, .thinking: .secondary
         case .assistant: .accentColor
         case .error: .red
         case .toolCall: .secondary
@@ -184,8 +185,11 @@ private struct MessageRow: View {
     }
 
     private var textColor: Color {
-        if case .error = message.role { return .red }
-        return .primary
+        switch message.role {
+        case .thinking: .secondary
+        case .error: .red
+        default: .primary
+        }
     }
 }
 

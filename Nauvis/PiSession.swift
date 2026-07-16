@@ -6,6 +6,7 @@ struct ConversationMessage: Identifiable {
     enum Role {
         case user
         case assistant
+        case thinking
         case error
         case toolCall(ToolExecution)
     }
@@ -30,6 +31,7 @@ final class PiSession: ObservableObject {
     private var outputBuffer = Data()
     private var errorBuffer = Data()
     private var assistantMessageID: UUID?
+    private var thinkingMessageID: UUID?
     private var runningTools: [String: ToolExecution] = [:]
     private var stopTask: Task<Void, Never>?
     private var isStopping = false
@@ -235,16 +237,27 @@ final class PiSession: ObservableObject {
         case "agent_settled":
             isRunning = false
             assistantMessageID = nil
+            thinkingMessageID = nil
 
         case "message_start":
             if let message = event["message"] as? [String: Any], message["role"] as? String == "assistant" {
                 assistantMessageID = nil
+                thinkingMessageID = nil
             }
 
         case "message_update":
             guard let update = event["assistantMessageEvent"] as? [String: Any] else { return }
-            if update["type"] as? String == "text_delta", let delta = update["delta"] as? String {
-                appendAssistant(delta)
+            switch update["type"] as? String {
+            case "text_delta":
+                if let delta = update["delta"] as? String {
+                    appendAssistant(delta)
+                }
+            case "thinking_delta":
+                if let delta = update["delta"] as? String {
+                    appendThinking(delta)
+                }
+            default:
+                break
             }
 
         case "message_end":
@@ -253,6 +266,7 @@ final class PiSession: ObservableObject {
                 appendError(error)
             }
             assistantMessageID = nil
+            thinkingMessageID = nil
 
         case "tool_execution_start":
             startTool(event)
@@ -333,6 +347,16 @@ final class PiSession: ObservableObject {
             messages.append(message)
         }
         guard let id = assistantMessageID, let index = messages.firstIndex(where: { $0.id == id }) else { return }
+        messages[index].text += delta
+    }
+
+    private func appendThinking(_ delta: String) {
+        if thinkingMessageID == nil {
+            let message = ConversationMessage(role: .thinking, text: "")
+            thinkingMessageID = message.id
+            messages.append(message)
+        }
+        guard let id = thinkingMessageID, let index = messages.firstIndex(where: { $0.id == id }) else { return }
         messages[index].text += delta
     }
 
