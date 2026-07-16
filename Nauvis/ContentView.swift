@@ -39,6 +39,8 @@ struct ContentView: View {
         }
         .focusedSceneObject(appState)
         .frame(minWidth: 480, minHeight: 320)
+        .background(Color(nsColor: .windowBackgroundColor))
+        .tint(Color.accentColor)
         .onDisappear {
             appState.stopAllSessions()
         }
@@ -57,10 +59,9 @@ private struct SessionView: View {
     var body: some View {
         VStack(spacing: 0) {
             transcript
-            Divider()
             inputField
         }
-        .background(Color(nsColor: .textBackgroundColor))
+        .background(Color(nsColor: .windowBackgroundColor))
         .onChange(of: inputIsFocused) { _, focused in
             if focused {
                 onFocus()
@@ -77,7 +78,7 @@ private struct SessionView: View {
     private var transcript: some View {
         ScrollViewReader { proxy in
             ScrollView {
-                LazyVStack(alignment: .leading, spacing: 18) {
+                LazyVStack(alignment: .leading, spacing: 22) {
                     ForEach(session.messages) { message in
                         Group {
                             switch message.role {
@@ -92,7 +93,10 @@ private struct SessionView: View {
                         .id(message.id)
                     }
                 }
-                .padding(16)
+                .padding(.horizontal, 20)
+                .padding(.vertical, 24)
+                .frame(maxWidth: 760, alignment: .leading)
+                .frame(maxWidth: .infinity)
             }
             .onAppear {
                 scrollToBottom(proxy)
@@ -114,7 +118,7 @@ private struct SessionView: View {
                 axis: .vertical
             )
             .textFieldStyle(.plain)
-            .font(.system(.body, design: .monospaced))
+            .font(.body)
             .lineLimit(1...8)
             .focused($inputIsFocused)
             .disabled(!session.isAvailable)
@@ -125,14 +129,23 @@ private struct SessionView: View {
                     session.abort()
                 } label: {
                     Image(systemName: "stop.fill")
-                        .font(.caption)
+                        .font(.system(size: 9, weight: .semibold))
+                        .frame(width: 24, height: 24)
+                        .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
                 .foregroundStyle(.secondary)
-                .help("Stop")
+                .help("Stop response")
+                .accessibilityLabel("Stop response")
             }
         }
-        .padding(12)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
+        .frame(maxWidth: 720)
+        .nauvisSurface(cornerRadius: 12)
+        .frame(maxWidth: .infinity)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
     }
 
     private func submit() {
@@ -152,12 +165,14 @@ private struct MessageRow: View {
     let message: ConversationMessage
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 5) {
+        VStack(alignment: .leading, spacing: 6) {
             Text(label)
-                .font(.caption2.monospaced())
+                .font(.caption2.weight(.semibold))
+                .tracking(0.8)
                 .foregroundStyle(labelColor)
             Text(message.text)
-                .font(.system(.body, design: .monospaced))
+                .font(.body)
+                .lineSpacing(3)
                 .foregroundStyle(textColor)
                 .textSelection(.enabled)
                 .fixedSize(horizontal: false, vertical: true)
@@ -187,7 +202,6 @@ private struct MessageRow: View {
     private var textColor: Color {
         switch message.role {
         case .thinking: .secondary
-        case .error: .red
         default: .primary
         }
     }
@@ -216,6 +230,9 @@ private struct ToolCallRow: View {
                     .foregroundStyle(.tertiary)
             }
             .font(.system(.callout, design: .monospaced))
+            .padding(.horizontal, 12)
+            .padding(.vertical, 10)
+            .nauvisSurface()
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -244,10 +261,9 @@ private struct ToolCallRow: View {
 
     private var stateColor: Color {
         switch execution.state {
-        case .running: .secondary
-        case .succeeded: .green
+        case .running: .accentColor
+        case .succeeded, .cancelled: .secondary
         case .failed: .red
-        case .cancelled: .secondary
         }
     }
 }
@@ -257,13 +273,14 @@ private struct ToolExecutionView: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
+            VStack(alignment: .leading, spacing: 24) {
                 HStack {
                     Text(execution.name)
-                        .font(.headline.monospaced())
+                        .font(.headline)
                     Spacer()
                     Text(status)
-                        .font(.caption.monospaced())
+                        .font(.caption2.weight(.semibold))
+                        .tracking(0.8)
                         .foregroundStyle(statusColor)
                 }
 
@@ -275,22 +292,29 @@ private struct ToolExecutionView: View {
                     section("DETAILS", execution.details)
                 }
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(16)
+            .padding(.horizontal, 20)
+            .padding(.vertical, 24)
+            .frame(maxWidth: 820, alignment: .leading)
+            .frame(maxWidth: .infinity)
         }
-        .background(Color(nsColor: .textBackgroundColor))
+        .background(Color(nsColor: .windowBackgroundColor))
     }
 
     private func section(_ title: String, _ text: String) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: 8) {
             Text(title)
-                .font(.caption2.monospaced())
+                .font(.caption2.weight(.semibold))
+                .tracking(0.8)
                 .foregroundStyle(.secondary)
             Text(text)
                 .font(.system(.body, design: .monospaced))
+                .lineSpacing(2)
                 .textSelection(.enabled)
                 .fixedSize(horizontal: false, vertical: true)
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(14)
+        .nauvisSurface()
     }
 
     private var status: String {
@@ -304,9 +328,22 @@ private struct ToolExecutionView: View {
 
     private var statusColor: Color {
         switch execution.state {
-        case .running, .cancelled: .secondary
-        case .succeeded: .green
+        case .running: .accentColor
+        case .succeeded, .cancelled: .secondary
         case .failed: .red
+        }
+    }
+}
+
+private extension View {
+    func nauvisSurface(cornerRadius: CGFloat = 10) -> some View {
+        background {
+            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                .fill(Color.primary.opacity(0.05))
+        }
+        .overlay {
+            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                .stroke(Color.primary.opacity(0.08), lineWidth: 1)
         }
     }
 }
