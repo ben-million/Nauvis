@@ -7,6 +7,7 @@ struct ConversationMessage: Identifiable {
         case user
         case assistant
         case error
+        case toolCall(ToolExecution)
     }
 
     let id = UUID()
@@ -29,6 +30,7 @@ final class PiSession: ObservableObject {
     private var outputBuffer = Data()
     private var errorBuffer = Data()
     private var assistantMessageID: UUID?
+    private var toolExecutions: [String: ToolExecution] = [:]
     private var stopTask: Task<Void, Never>?
     private var isStopping = false
     private var requestID = 0
@@ -39,7 +41,10 @@ final class PiSession: ObservableObject {
     }
 
     var hasUserMessages: Bool {
-        messages.contains { $0.role == .user }
+        messages.contains { message in
+            if case .user = message.role { return true }
+            return false
+        }
     }
 
     func prompt(_ message: String) {
@@ -77,6 +82,7 @@ final class PiSession: ObservableObject {
         isStopping = true
         isAvailable = false
         isRunning = false
+        cancelRunningTools()
         try? input?.fileHandleForWriting.close()
 
         guard let process, process.isRunning else { return }
@@ -248,6 +254,15 @@ final class PiSession: ObservableObject {
             }
             assistantMessageID = nil
 
+        case "tool_execution_start":
+            startTool(event)
+
+        case "tool_execution_update":
+            updateTool(event)
+
+        case "tool_execution_end":
+            finishTool(event)
+
         case "response":
             if event["success"] as? Bool == false {
                 appendError(event["error"] as? String ?? "Pi rejected the command.")
@@ -266,6 +281,47 @@ final class PiSession: ObservableObject {
 
         default:
             break
+        }
+    }
+
+    private func startTool(_ event: [String: Any]) {
+        guard
+            let id = event["toolCallId"] as? String,
+            let name = event["toolName"] as? String,
+            toolExecutions[id] == nil
+        else { return }
+
+        let execution = ToolExecution(
+            id: id,
+            name: name,
+            arguments: event["args"] ?? [:]
+        )
+        toolExecutions[id] = execution
+        messages.append(ConversationMessage(role: .toolCall(execution), text: ""))
+    }
+
+    private func updateTool(_ event: [String: Any]) {
+        guard
+            let id = event["toolCallId"] as? String,
+            let execution = toolExecutions[id]
+        else { return }
+        execution.update(with: event["partialResult"])
+    }
+
+    private func finishTool(_ event: [String: Any]) {
+        guard
+            let id = event["toolCallId"] as? String,
+            let execution = toolExecutions[id]
+        else { return }
+        execution.finish(
+            with: event["result"],
+            isError: event["isError"] as? Bool ?? false
+        )
+    }
+
+    private func cancelRunningTools() {
+        for execution in toolExecutions.values {
+            execution.cancel()
         }
     }
 
@@ -295,6 +351,7 @@ final class PiSession: ObservableObject {
         errors = nil
         isAvailable = false
         isRunning = false
+        cancelRunningTools()
 
         guard !stoppedIntentionally else { return }
         appendError(status == 0 ? "Pi stopped unexpectedly." : "Pi exited with status \(status).")

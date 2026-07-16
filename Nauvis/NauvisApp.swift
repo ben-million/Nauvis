@@ -24,8 +24,8 @@ private struct SessionCommands: Commands {
             }
             .keyboardShortcut("t", modifiers: .command)
 
-            Button("Close Session") {
-                appState?.closeCurrentSession()
+            Button("Close Tab") {
+                appState?.closeCurrentTab()
             }
             .keyboardShortcut("w", modifiers: .command)
         }
