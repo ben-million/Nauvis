@@ -30,7 +30,7 @@ final class PiSession: ObservableObject {
     private var outputBuffer = Data()
     private var errorBuffer = Data()
     private var assistantMessageID: UUID?
-    private var toolExecutions: [String: ToolExecution] = [:]
+    private var runningTools: [String: ToolExecution] = [:]
     private var stopTask: Task<Void, Never>?
     private var isStopping = false
     private var requestID = 0
@@ -288,7 +288,7 @@ final class PiSession: ObservableObject {
         guard
             let id = event["toolCallId"] as? String,
             let name = event["toolName"] as? String,
-            toolExecutions[id] == nil
+            runningTools[id] == nil
         else { return }
 
         let execution = ToolExecution(
@@ -296,14 +296,14 @@ final class PiSession: ObservableObject {
             name: name,
             arguments: event["args"] ?? [:]
         )
-        toolExecutions[id] = execution
+        runningTools[id] = execution
         messages.append(ConversationMessage(role: .toolCall(execution), text: ""))
     }
 
     private func updateTool(_ event: [String: Any]) {
         guard
             let id = event["toolCallId"] as? String,
-            let execution = toolExecutions[id]
+            let execution = runningTools[id]
         else { return }
         execution.update(with: event["partialResult"])
     }
@@ -311,7 +311,7 @@ final class PiSession: ObservableObject {
     private func finishTool(_ event: [String: Any]) {
         guard
             let id = event["toolCallId"] as? String,
-            let execution = toolExecutions[id]
+            let execution = runningTools.removeValue(forKey: id)
         else { return }
         execution.finish(
             with: event["result"],
@@ -320,9 +320,10 @@ final class PiSession: ObservableObject {
     }
 
     private func cancelRunningTools() {
-        for execution in toolExecutions.values {
+        for execution in runningTools.values {
             execution.cancel()
         }
+        runningTools.removeAll()
     }
 
     private func appendAssistant(_ delta: String) {

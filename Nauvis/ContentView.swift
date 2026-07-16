@@ -6,22 +6,29 @@ struct ContentView: View {
 
     var body: some View {
         BonsplitView(controller: appState.controller) { tab, pane in
-            if let session = appState.sessions[tab.id] {
-                SessionView(
-                    session: session,
-                    onSubmit: { message in
-                        appState.prompt(message, in: tab.id)
-                    },
-                    onFocus: {
-                        appState.controller.focusPane(pane)
-                    },
-                    onOpenToolCall: { execution in
-                        appState.openToolCall(execution, from: pane)
-                    }
-                )
-            } else if let execution = appState.toolCallTabs[tab.id] {
-                ToolExecutionView(execution: execution)
+            let isActive = appState.controller.selectedTab(inPane: pane)?.id == tab.id
+                && appState.controller.focusedPaneId == pane
+
+            Group {
+                if let session = appState.sessions[tab.id] {
+                    SessionView(
+                        session: session,
+                        isActive: isActive,
+                        onSubmit: { message in
+                            appState.prompt(message, in: tab.id)
+                        },
+                        onFocus: {
+                            appState.controller.focusPane(pane)
+                        },
+                        onOpenToolCall: { execution in
+                            appState.openToolCall(execution, from: pane)
+                        }
+                    )
+                } else if let execution = appState.toolCallTabs[tab.id] {
+                    ToolExecutionView(execution: execution)
+                }
             }
+            .animation(nil, value: tab.id)
         } emptyPane: { pane in
             Button("New Session") {
                 appState.newSession(inPane: pane)
@@ -40,6 +47,7 @@ struct ContentView: View {
 
 private struct SessionView: View {
     @ObservedObject var session: PiSession
+    let isActive: Bool
     let onSubmit: (String) -> Void
     let onFocus: () -> Void
     let onOpenToolCall: (ToolExecution) -> Void
@@ -59,7 +67,10 @@ private struct SessionView: View {
             }
         }
         .onAppear {
-            inputIsFocused = true
+            inputIsFocused = isActive
+        }
+        .onChange(of: isActive) { _, active in
+            inputIsFocused = active
         }
     }
 
