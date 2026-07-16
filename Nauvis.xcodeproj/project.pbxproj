@@ -332,10 +332,10 @@
 /* Begin XCRemoteSwiftPackageReference section */
 		B53A2BF53008782D00B411E1 /* XCRemoteSwiftPackageReference "bonsplit" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/almonk/bonsplit.git";
+			repositoryURL = "https://github.com/ben-million/bonsplit.git";
 			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 1.1.1;
+				kind = revision;
+				revision = a7f1fdb5af8fe3aba118c9594e0969c15d6f2713;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */

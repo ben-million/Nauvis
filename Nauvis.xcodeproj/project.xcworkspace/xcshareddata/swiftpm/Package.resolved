@@ -1,13 +1,12 @@
 {
-  "originHash" : "0b2873a0d82674be3ca3887891871b927b3ec345cf828e4c743360c8a105fc7b",
+  "originHash" : "f8e22c200e5761124f08c2a3a27f7ca2e6f0fb45e5022072a54f009f377e96ef",
   "pins" : [
     {
       "identity" : "bonsplit",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/almonk/bonsplit.git",
+      "location" : "https://github.com/ben-million/bonsplit.git",
       "state" : {
-        "revision" : "7c322f078c388438e4b7896a86c57598aa7e203d",
-        "version" : "1.1.1"
+        "revision" : "a7f1fdb5af8fe3aba118c9594e0969c15d6f2713"
       }
     }
   ],
