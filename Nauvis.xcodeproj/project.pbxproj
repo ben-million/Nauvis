@@ -6,6 +6,10 @@
 	objectVersion = 110;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		B53A2BF43008782D00B411E1 /* Bonsplit in Frameworks */ = {isa = PBXBuildFile; productRef = B53A2BF63008782D00B411E1 /* Bonsplit */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		B53A2BE63008782C00B411E1 /* Nauvis.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Nauvis.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -22,6 +26,7 @@
 		B53A2BE33008782C00B411E1 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			files = (
+				B53A2BF43008782D00B411E1 /* Bonsplit in Frameworks */,
 			);
 		};
 /* End PBXFrameworksBuildPhase section */
@@ -60,6 +65,9 @@
 				B53A2BE83008782C00B411E1 /* Nauvis */,
 			);
 			name = Nauvis;
+			packageProductDependencies = (
+				B53A2BF63008782D00B411E1 /* Bonsplit */,
+			);
 			productName = Nauvis;
 			productReference = B53A2BE63008782C00B411E1 /* Nauvis.app */;
 			productType = "com.apple.product-type.application";
@@ -89,6 +97,9 @@
 			mainGroup = B53A2BDD3008782C00B411E1;
 			minimizedProjectReferenceProxies = 1;
 			preferredProjectObjectVersion = 77;
+			packageReferences = (
+				B53A2BF53008782D00B411E1 /* XCRemoteSwiftPackageReference "bonsplit" */,
+			);
 			productRefGroup = B53A2BE73008782C00B411E1 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -244,10 +255,9 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 77CY9QJ59N;
-				ENABLE_APP_SANDBOX = YES;
+				ENABLE_APP_SANDBOX = NO;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
-				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -276,10 +286,9 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 77CY9QJ59N;
-				ENABLE_APP_SANDBOX = YES;
+				ENABLE_APP_SANDBOX = NO;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
-				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -319,6 +328,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		B53A2BF53008782D00B411E1 /* XCRemoteSwiftPackageReference "bonsplit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/almonk/bonsplit.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.1.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		B53A2BF63008782D00B411E1 /* Bonsplit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B53A2BF53008782D00B411E1 /* XCRemoteSwiftPackageReference "bonsplit" */;
+			productName = Bonsplit;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = B53A2BDE3008782C00B411E1 /* Project object */;
 	validationLevel = 1;
